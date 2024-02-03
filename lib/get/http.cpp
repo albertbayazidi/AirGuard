@@ -10,3 +10,12 @@ void respCode(int httpResponseCode){
         Serial.println(httpResponseCode);
     }
 }
+
+String outputState(int output){
+  if(digitalRead(output)){
+    return "checked";
+  }
+  else {
+    return "";
+  }
+}
