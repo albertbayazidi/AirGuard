@@ -1,57 +1,78 @@
-
-#include <WiFi.h>
+#include <Arduino.h>
+// Local libraries
+#include "http.h"
+#include "get_vals.h"
+#include "start.h"
+// External libraries
+#include <ArduinoJson.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-
 #include <ESPDash.h>
 
+  
+// Definitions
+#define LED 2
+String ssid = "123";
+String password = "12345678";
 
-/* Your WiFi Credentials */
-const char* ssid = "Fairphone"; // SSID
-const char* password = ""; // Password
+// Variables
+unsigned long lastTime = 0;
+unsigned long timerDelay = 60000; // delay is 16 hours
+JsonDocument doc;
 
-/* Start Webserver */
+String serverName = "https://www.hvakosterstrommen.no/api/v1/prices/2024/02-02_NO3.json"; // API endpoint
+
+// DASHBOARD
 AsyncWebServer server(80);
-
-/* Attach ESP-DASH to AsyncWebServer */
-ESPDash dashboard(&server); 
-
-/* 
-  Dashboard Cards 
-  Format - (Dashboard Instance, Card Type, Card Name, Card Symbol(optional) )
-*/
+ESPDash dashboard(&server);
 Card temperature(&dashboard, TEMPERATURE_CARD, "Temperature", "°C");
 Card humidity(&dashboard, HUMIDITY_CARD, "Humidity", "%");
 
 
 void setup() {
-  Serial.begin(115200);
-
-  /* Connect WiFi */
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-      Serial.printf("WiFi Failed!\n");
-      return;
-  }
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  /* Start AsyncWebServer */
-  server.begin();
-}
+	Serial.begin(115200);
+	startWifi(ssid, password);
+	server.begin();
+	pinMode(LED,OUTPUT);
+	digitalWrite(LED,HIGH);
+	}
 
 void loop() {
-  /* Update Card Values */
-  temperature.update((int)random(0, 50));
-  humidity.update((int)random(0, 100));
+	// HTTP Request
+	HTTPClient http;
+	String serverPath = serverName;
+	http.begin(serverPath.c_str());
+	int httpResponseCode = http.GET();
 
-  /* Send Updates to our Dashboard (realtime) */
-  dashboard.sendUpdates();
+	// HTTP Response and parsing
+	if (httpResponseCode>0) {
+		while ( (WiFi.status() == WL_CONNECTED) && ((millis() - lastTime) < timerDelay) ) {
+			digitalWrite(LED,HIGH); // WIFI indicator
+			respCode(httpResponseCode);
 
-  /* 
-    Delay is just for demonstration purposes in this example,
-    Replace this code with 'millis interval' in your final project.
-  */
-  delay(3000);
-}
+			String payload = http.getString();
+
+			deserializeJson(doc,payload);
+
+			printVals(doc,"NOK_per_kWh");
+			printVals(doc,"EUR_per_kWh");
+			temperature.update((int)random(0, 50));
+			humidity.update((int)random(0, 100));
+			/* Send Updates to our Dashboard (realtime) */
+			dashboard.sendUpdates();
+
+			delay(10000);
+			}
+		}
+		else {
+			respCode(httpResponseCode);
+			delay(60000); // wait 1 minute
+		}
+		if (WiFi.status() != WL_CONNECTED) {
+			digitalWrite(LED,LOW); // WIFI indicator
+			Serial.println("WiFi Disconnected");
+
+		}
+		lastTime = millis();
+		http.end(); // Free resources
+	}
