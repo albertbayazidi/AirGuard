@@ -1,13 +1,14 @@
-# NAVN
+# AirGuard
 
 ## Features
-
+- Webpage
+- Gas detection 
 
 
 
 ## Demo
 
-BILDE AV NETTSIDE
+<img src="Uten navn.png">
 
 
 ## Usage
