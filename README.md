@@ -4,8 +4,6 @@
 - Webpage
 - Gas detection 
 
-
-
 ## Demo
 
 <img src="Uten navn.png">
