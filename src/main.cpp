@@ -27,14 +27,14 @@ Adafruit_Sensor *bmp_pressure = bmp.getPressureSensor();
 
 
 // Replace with your network credentials
-const char* ssid = "Fairphone";
-const char* password = "TEMPPASS";
+const char* ssid = "NAVN";
+const char* password = "PASS";
 
 // Set web server port number to 80
 WiFiServer server(80);
 String header;
 
-String serverName = "https://www.hvakosterstrommen.no/api/v1/prices/2024/02-02_NO3.json"; // API endpoint
+String serverName = "https://www.hvakosterstrommen.no/api/v1/prices/2024/xx-xx_NO3.json"; // Kan endre xx-xx for å få en riktig dato.
 JsonDocument doc;
 
 // Current time
