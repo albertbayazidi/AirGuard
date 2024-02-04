@@ -13,7 +13,7 @@
 
 Remember to install necessary libraries.
 
-The project was developed by NAVN 
+The project was developed by Albert, Iver, Mikkel, og Oliver
 
 ## Sources
 
