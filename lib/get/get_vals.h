@@ -3,4 +3,4 @@
 
 void printVals(JsonDocument doc,String valName);
 
-void getVals();
+String avgVals(JsonDocument doc,String valName);

@@ -1,13 +1,30 @@
 #include <Arduino.h>
+// exsternal libraries
 #include <WiFi.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_AHTX0.h>
+#include <ArduinoJson.h>
+
+// local libraries
+#include "http.h"
+#include "get_vals.h"
+#include "start.h"
+
 
 #define LED 2
 int heat = 4; 
-int CO2 = 34;
+int CO = 34;
+
+float COData; 
+
+// sensor objects
+Adafruit_AHTX0 aht;
+Adafruit_BMP280 bmp; 
+Adafruit_Sensor *bmp_temp = bmp.getTemperatureSensor();
+Adafruit_Sensor *bmp_pressure = bmp.getPressureSensor();
+
 
 // Replace with your network credentials
 const char* ssid = "Fairphone";
@@ -16,6 +33,9 @@ const char* password = "TEMPPASS";
 // Set web server port number to 80
 WiFiServer server(80);
 String header;
+
+String serverName = "https://www.hvakosterstrommen.no/api/v1/prices/2024/02-02_NO3.json"; // API endpoint
+JsonDocument doc;
 
 // Current time
 unsigned long currentTime = millis();
@@ -26,8 +46,11 @@ const long timeoutTime = 2000;
 
 void setup() {
   Serial.begin(115200);
-  // Initialize the output variables as outputs
+  // Initialize sensor and LED
   pinMode(LED,OUTPUT);
+  pinMode(heat, OUTPUT);
+  bmp.begin();
+  aht.begin();
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -36,7 +59,6 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
-  digitalWrite(LED,HIGH);
   }
   // Print local IP address and start web server
   Serial.println("");
@@ -44,17 +66,32 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   server.begin();
+  digitalWrite(LED,HIGH);
 }
 
 void loop(){
-  WiFiClient client = server.available();   // Listen for incoming clients
-
+  WiFiClient client = server.available();   // Listen for incoming clients 
+  HTTPClient http;
+	String serverPath = serverName;
+	http.begin(serverPath.c_str());
+	int httpResponseCode = http.GET();
+  
   if (client) {                             // If a new client connects,
     currentTime = millis();
     previousTime = currentTime;
     Serial.println("New Client.");          // print a message out in the serial port
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected() && currentTime - previousTime <= timeoutTime) {  // loop while the client's connected
+      // GET NEW SENSOR VALUES
+      sensors_event_t temp_event, pressure_event;
+      bmp_temp->getEvent(&temp_event);
+      bmp_pressure->getEvent(&pressure_event);
+      sensors_event_t humidity, temp;
+      //aht.getEvent(&humidity, &temp);  //problem here
+
+      analogWrite(heat, 170); // set heating element i monoxide at 1.5v
+      COData = analogRead(CO); 
+
       currentTime = millis();
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
@@ -66,31 +103,18 @@ void loop(){
           if (currentLine.length() == 0) {
             // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
             // and a content-type so the client knows what's coming, then a blank line:
+            
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
             client.println("Connection: close");
             client.println();
-            
+            String payload = http.getString();
+
+			      deserializeJson(doc,payload);
+            String Pris = avgVals(doc,"NOK_per_kWh");
+
             // Display the HTML web page
-            client.println("<!DOCTYPE html><html>");
-            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-            client.println("<link rel=\"icon\" href=\"data:,\">");
-            // CSS to style the on/off buttons 
-            // Feel free to change the background-color and font-size attributes to fit your preferences
-            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
-            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}</style></head>");
-            
-            // Web Page Heading
-            client.println("<body><h1>AirGuard </h1>");
-            
-            // Display current state, and ON/OFF buttons for GPIO 26  
-            client.println("<p>State DEES </p>");
-            // If the output26State is off, it displays the ON button       
- 
-              
-            client.println("</body></html>");
+            webPage(client,temp_event,pressure_event,COData,Pris);
             
             // The HTTP response ends with another blank line
             client.println();

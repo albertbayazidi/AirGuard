@@ -13,7 +13,7 @@ int heat = 4; // monoxide heater
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   bmp.begin();
   aht.begin();
   
@@ -39,7 +39,7 @@ void loop() {
 
   
   analogWrite(heat, 170); // set heating element i monoxide at 1.5v
-  Serial.println(analogRead(2)); // no unit what unit is, do some nice map() functions
+  Serial.println(analogRead(34)); // no unit what unit is, do some nice map() functions
   Serial.println();
   Serial.println();
   delay(2000);
