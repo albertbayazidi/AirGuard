@@ -20,7 +20,6 @@ String outputState(int output){
   }
 }
 
-
 void webPage(WiFiClient client,sensors_event_t temp_event,sensors_event_t pressure_event,float COData,String pris){
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
@@ -121,7 +120,7 @@ void webPage(WiFiClient client,sensors_event_t temp_event,sensors_event_t pressu
   client.println("<!-- Display data for Room 3 -->");
   client.println("<div class=\"box\">Data for Room 3</div>");
   client.println("</section>");
-  client.println("<img class=\"background-image\" src=\"https://i.ibb.co/b3cZ3Xm/bakgrunn.png\" alt=\"Background Image\">");
+  client.println("<img class=\"background-image\" src=\"https://raw.githubusercontent.com/albertbayazidi/AirGuard/main/img/bakgrunn.png\" alt=\"Background Image\">");
   client.println("<!-- JavaScript code for tab functionality and updating data -->");
   client.println("<script>");
   client.println("function showTab(tabId) {");
@@ -136,7 +135,7 @@ void webPage(WiFiClient client,sensors_event_t temp_event,sensors_event_t pressu
   client.println("function updateData() {");
   client.println("  document.getElementById(\"temp\").innerText = " + String(temp_event.temperature) +";");
   client.println("  document.getElementById(\"co2\").innerText = " + String(COData) +";");
-  client.println("  document.getElementById(\"humidity\").innerText = getRandomNumber(40, 60);");
+  client.println("  document.getElementById(\"humidity\").innerText = " + String(50) + ";");
   client.println("  document.getElementById(\"pressure\").innerText = " + String(pressure_event.pressure) +";");
   client.println("  document.getElementById(\"price\").innerText =" + String(pris) + ";");
   client.println("}");
