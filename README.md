@@ -6,7 +6,7 @@
 
 ## Demo
 
-<img src="webpage.png">
+<img src="img/webpage.png">
 
 
 ## Usage
