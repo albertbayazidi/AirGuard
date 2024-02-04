@@ -1,3 +1,9 @@
+<p align="center">
+  
+  <img src="img/logo.png">
+  
+</p>
+
 # AirGuard
 
 ## Features
@@ -5,12 +11,10 @@
 - Gas detection 
 
 ## Demo
-
-<img src="webpage.png">
+<img src="img/webpage.png">
 
 
 ## Usage
-
 Remember to install necessary libraries.
 
 The project was developed by Albert, Iver, Mikkel, og Oliver
