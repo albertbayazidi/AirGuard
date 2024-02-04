@@ -4,7 +4,12 @@
   
 </p>
 
-# AirGuard
+
+<h1 align="center">
+  
+  AirGuard
+  
+</h1>
 
 ## Features
 - Webpage
