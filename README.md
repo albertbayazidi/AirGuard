@@ -6,7 +6,7 @@
 
 ## Demo
 
-<img src="Uten navn.png">
+<img src="webpage.png">
 
 
 ## Usage
